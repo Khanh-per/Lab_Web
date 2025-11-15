@@ -13,6 +13,12 @@
 
     int studentId = Integer.parseInt(idParam);
 
+    String emailRegex = "^[A-Za-z0-9+._-]+@.+\\..+$";
+    if(email != null && !email.trim().isEmpty() && !email.matches(emailRegex)) {
+        response.sendRedirect("edit_student.jsp?id=" + studentId + "&error=Invalid email format");
+        return;
+    }
+
     Connection conn = null;
     PreparedStatement pstmt = null;
 

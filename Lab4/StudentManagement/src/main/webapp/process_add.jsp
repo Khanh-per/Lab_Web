@@ -12,6 +12,13 @@
         return;
     }
 
+    String emailRegex = "^[A-Za-z0-9+._-]+@.+\\..+$";
+    if(email != null && !email.trim().isEmpty() && !email.matches(emailRegex)) {
+        // Invalid email format
+        response.sendRedirect("add_student.jsp?error=Invalid email format");
+        return;
+    }
+
     Connection conn = null;
     PreparedStatement pstmt = null;
 
