@@ -10,9 +10,7 @@ public class StudentDAO {
     // Database configuration
     private static final String DB_URL = "jdbc:mysql://localhost:3306/student_management";
     private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "Khanh2005@";
-
-
+    private static final String DB_PASSWORD = "Khanh2005@"; // Check your password
 
     // Get database connection
     private Connection getConnection() throws SQLException {
@@ -24,31 +22,11 @@ public class StudentDAO {
         }
     }
 
+    // --- 1. BASIC CRUD OPERATIONS ---
+
     // Get all students
     public List<Student> getAllStudents() {
-        List<Student> students = new ArrayList<>();
-        String sql = "SELECT * FROM students ORDER BY id DESC";
-
-        try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                Student student = new Student();
-                student.setId(rs.getInt("id"));
-                student.setStudentCode(rs.getString("student_code"));
-                student.setFullName(rs.getString("full_name"));
-                student.setEmail(rs.getString("email"));
-                student.setMajor(rs.getString("major"));
-                student.setCreatedAt(rs.getTimestamp("created_at"));
-                students.add(student);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return students;
+        return searchAndFilterStudents(null, null, "id", "DESC");
     }
 
     // Get student by ID
@@ -62,14 +40,7 @@ public class StudentDAO {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                Student student = new Student();
-                student.setId(rs.getInt("id"));
-                student.setStudentCode(rs.getString("student_code"));
-                student.setFullName(rs.getString("full_name"));
-                student.setEmail(rs.getString("email"));
-                student.setMajor(rs.getString("major"));
-                student.setCreatedAt(rs.getTimestamp("created_at"));
-                return student;
+                return mapResultSetToStudent(rs);
             }
 
         } catch (SQLException e) {
@@ -137,5 +108,108 @@ public class StudentDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    // --- 2. HELPER METHODS ---
+
+    // Helper to map ResultSet to Student object
+    private Student mapResultSetToStudent(ResultSet rs) throws SQLException {
+        Student student = new Student();
+        student.setId(rs.getInt("id"));
+        student.setStudentCode(rs.getString("student_code"));
+        student.setFullName(rs.getString("full_name"));
+        student.setEmail(rs.getString("email"));
+        student.setMajor(rs.getString("major"));
+        student.setCreatedAt(rs.getTimestamp("created_at"));
+        return student;
+    }
+
+    // Validate Sort Column
+    private String validateSortColumn(String sortBy) {
+        if (sortBy == null) return "id";
+        switch (sortBy) {
+            case "student_code": return "student_code";
+            case "full_name":    return "full_name";
+            case "email":        return "email";
+            case "major":        return "major";
+            default:             return "id";
+        }
+    }
+
+    // Validate Sort Order
+    private String validateOrder(String order) {
+        return "desc".equalsIgnoreCase(order) ? "DESC" : "ASC";
+    }
+
+    // --- 3. MASTER SEARCH METHOD ---
+
+    public List<Student> searchAndFilterStudents(String keyword, String major, String sortBy, String order) {
+        List<Student> students = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder("SELECT * FROM students WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+
+        // 1. Handle Search Keyword
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (student_code LIKE ? OR full_name LIKE ? OR email LIKE ?) ");
+            String searchPattern = "%" + keyword.trim() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+
+        // 2. Handle Major Filter
+        if (major != null && !major.trim().isEmpty()) {
+            sql.append("AND major = ? ");
+            params.add(major);
+        }
+
+        // 3. Handle Sorting
+        String safeCol = validateSortColumn(sortBy);
+        String safeOrd = validateOrder(order);
+        sql.append("ORDER BY ").append(safeCol).append(" ").append(safeOrd);
+
+        // 4. Execute
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                pstmt.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    students.add(mapResultSetToStudent(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return students;
+    }
+
+    // --- 4. EXERCISE SPECIFIC WRAPPER METHODS ---
+    // These methods exist to match the exact function names in your assignment text.
+
+    // Requirement 5.1: Search Students
+    public List<Student> searchStudents(String keyword) {
+        return searchAndFilterStudents(keyword, null, "id", "DESC");
+    }
+
+    // Requirement 7.1 Method 1: Sort Students
+    public List<Student> getStudentsSorted(String sortBy, String order) {
+        return searchAndFilterStudents(null, null, sortBy, order);
+    }
+
+    // Requirement 7.1 Method 2: Filter Students by Major
+    public List<Student> getStudentsByMajor(String major) {
+        return searchAndFilterStudents(null, major, "id", "DESC");
+    }
+
+    // Requirement 7.1 Challenge: Filter AND Sort (Combined)
+    public List<Student> getStudentsFiltered(String major, String sortBy, String order) {
+        return searchAndFilterStudents(null, major, sortBy, order);
     }
 }

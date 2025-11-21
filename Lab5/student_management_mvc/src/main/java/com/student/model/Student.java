@@ -1,6 +1,9 @@
 package com.student.model;
 
+import com.student.dao.StudentDAO;
+
 import java.sql.Timestamp;
+import java.util.List;
 
 public class Student {
     private int id;

@@ -149,3 +149,236 @@ title: 'LAB 5 EXERCISES: SERVLET & MVC PATTERN'
     ![alt screenshot](image/DeleteStudent.png)
 5. **Empty State:** Delete all students
     - Should show "No students found" message
+
+---
+
+## PART B: HOMEWORK EXERCISES (40 points)
+
+---
+
+
+### EXERCISE 5: SEARCH FUNCTIONALITY (12 points)
+
+**Objective:** Add search capability to find students by name, code, or email.
+
+---
+
+#### 5.1: Update StudentDAO (4 points)
+
+**Task:** Add `searchStudents(String keyword)` method to `StudentDAO.java`
+
+**Code:** 
+![alt screenshoot](image/SearchStudent.png)
+**Result:** 
+![alt screenshoot](image/ReasultSearching.png)
+
+---
+
+#### 5.2: Add Search Controller Method (4 points)
+
+**Task:** Add search handling to `StudentController.java`
+
+**Code:**
+![alt screenshoot](image/SearchStdController.png)
+**Result:**
+![alt screenshoot](image/)
+
+---
+
+#### 5.3: Update Student List View (4 points)
+
+**Task:** Add search form to `student-list.jsp
+
+**Code:**
+![alt screenshoot](image/\SearchStudentView.png)
+**Result:**
+![alt screenshoot](image/SearchingView.png)
+
+---
+
+### EXERCISE 6: SERVER-SIDE VALIDATION (10 points)
+
+**Objective:** Add server-side validation to prevent invalid data entry.
+
+---
+
+#### 6.1: Create Validation Method (5 points)
+
+**Task:** Add `validateStudent()` method to `StudentController.java`
+
+**Code:**
+```java
+private boolean validateStudent(Student student, HttpServletRequest request) {
+        boolean isValid = true;
+
+        // Validate Student code
+        String code = student.getStudentCode();
+        String codePattern = "[A-Z]{2}[0-9]{3,}";
+
+        if(code == null || code.trim().isEmpty()) {
+            request.setAttribute("errorCode", "Student Code is required");
+            isValid = false;
+        } else if(!code.matches(codePattern)) {
+            request.setAttribute("errorCode", "Invalid format. Use 2 UPPERCASE letters + 3 or more digits (e.g., SV001)");
+            isValid = false;
+        }
+
+        // Validate Full name
+        String name = student.getFullName();
+        if (name == null || name.trim().isEmpty()) {
+            request.setAttribute("errorName", "Full name is required");
+            isValid = false;
+        } else if(name.trim().length() < 2) {
+            request.setAttribute("errorName", "Name must be at least 2 characters");
+            isValid = false;
+        }
+
+        // Validate email (only if provided)
+        String email = student.getEmail();
+        String emailPattern = "^[A-Za-z0-9+_.-]+@(.+)$";
+
+        if(email != null && !email.trim().isEmpty()) {
+            if (!email.matches(emailPattern)) {
+                request.setAttribute("errorEmail", "Invalid email format");
+                isValid = false;
+            }
+        }
+
+        // Validate major
+        String major = student.getMajor();
+        if(major == null || major.trim().isEmpty()) {
+            request.setAttribute("errorMajor", "Major is required");
+            isValid = false;
+        }
+
+        return isValid;
+    }
+```
+
+---
+
+#### 6.2: Integrate Validation into Insert/Update (3 points)
+
+**Task:** Use validation in `insertStudent()` and `updateStudent()` methods
+
+**Code:**
+
+``` java
+private void insertStudent(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String studentCode = request.getParameter("studentCode");
+        String fullName = request.getParameter("fullName");
+        String email = request.getParameter("email");
+        String major = request.getParameter("major");
+
+        Student newStudent = new Student(studentCode, fullName, email, major);
+
+        // Validate
+        if (!validateStudent(newStudent, request)) {
+            // 1. Preserve input data so the user doesn't have to re-type
+            request.setAttribute("student", newStudent);
+
+            // 2. Forward back to the form to show errors
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/views/student-form.jsp");
+            dispatcher.forward(request, response);
+
+            // 3. STOP execution here (do not save to DB)
+            return;
+        }
+
+        // If valid, proceed with insert
+        if (studentDAO.addStudent(newStudent)) {
+            response.sendRedirect("student?action=list&message=Student added successfully");
+        } else {
+            response.sendRedirect("student?action=list&error=Failed to add student");
+        }
+    }
+
+    private void updateStudent(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        //  Get ID as string first
+        String idStr = request.getParameter("id");
+        int id = 0;
+
+        try {
+            // Try to parse the ID. If it is "" or null, this line will throw an error
+            // and jump to the catch block instead of crashing the server.
+            id = Integer.parseInt(idStr);
+        } catch (NumberFormatException e) {
+            // If ID is missing/invalid, redirect to list with error
+            response.sendRedirect("student?action=list&error=Invalid Student ID");
+            return;
+        }
+
+        // 2. Get other data
+        String studentCode = request.getParameter("studentCode");
+        String fullName = request.getParameter("fullName");
+        String email = request.getParameter("email");
+        String major = request.getParameter("major");
+
+        Student student = new Student(studentCode, fullName, email, major);
+        student.setId(id);
+
+        // 3. Validate
+        if (!validateStudent(student, request)) {
+            // Preserve input data
+            request.setAttribute("student", student);
+            // Forward back to form
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/views/student-form.jsp");
+            dispatcher.forward(request, response);
+            return; // STOP execution
+        }
+
+        // 4. If valid, proceed with update
+        if (studentDAO.updateStudent(student)) {
+            response.sendRedirect("student?action=list&message=Student updated successfully");
+        } else {
+            response.sendRedirect("student?action=list&error=Failed to update student");
+        }
+    }
+```
+
+---
+
+#### 6.3: Display Validation Errors in Form (2 points)
+
+**Task:** Update `student-form.jsp` to show validation errors
+
+**Code:**
+![alt screenshoot](image/InvalidForm.png)
+**Result:**
+![alt screenshoot](image/ResultForm.png)
+
+---
+
+### EXERCISE 7: SORTING & FILTERING (10 points)
+
+**Objective:** Add ability to sort by columns and filter by major.
+
+---
+
+#### 7.1: Add Sort & Filter Methods to DAO (4 points)
+
+**Task:** Add two new methods to `StudentDAO.java`
+
+**Code:**
+![alt screenshoot](image/Filter&SortFunction.png)
+
+
+---
+
+#### 7.2: Add Controller Methods (3 points)
+
+**Task:** Add sorting and filtering to `StudentController.java`
+
+**Code:**
+![alt screenshoot](image/ModifyListStudent.png)
+
+
+---
+
+#### 7.3: Update View with Sort & Filter UI (3 points)
+
+**Task:** Add sorting and filtering controls to `student-list.jsp`
