@@ -95,6 +95,18 @@ public class StudentController extends HttpServlet {
         // 4. Optional: Get Total count for Dashboard/Footer
         request.setAttribute("totalStudents", studentDAO.getTotalStudents());
 
+        // --- BONUS: COOKIE TEST START ---
+// 1. Create a "theme" cookie if it doesn't exist
+        if (!com.student.util.CookieUtil.hasCookie(request, "theme")) {
+            com.student.util.CookieUtil.createCookie(response, "theme", "dark-mode", 60 * 60 * 24);
+            System.out.println("🍪 Cookie Created: theme = dark-mode");
+        } else {
+            // 2. Read the cookie
+            String currentTheme = com.student.util.CookieUtil.getCookieValue(request, "theme");
+            System.out.println("🍪 Cookie Found: theme = " + currentTheme);
+        }
+// --- BONUS: COOKIE TEST END ---
+
         // 5. Forward
         RequestDispatcher dispatcher = request.getRequestDispatcher("/views/student-list.jsp");
         dispatcher.forward(request, response);

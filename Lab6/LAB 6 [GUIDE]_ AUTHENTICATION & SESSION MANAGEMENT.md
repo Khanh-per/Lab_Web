@@ -38,7 +38,7 @@ title: LAB 6 AUTHENTICATION & SESSION MANAGEMENT
 10. [Running the Demo](#10-running-the-demo)
 
 ---
-
+    
 ## 1. WHY AUTHENTICATION?
 
 ### Security Problems Without Authentication

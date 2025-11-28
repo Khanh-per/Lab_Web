@@ -5,7 +5,7 @@ title: 'LAB 4 EXERCISES: JSP + MYSQL - CRUD OPERATIONS'
 
 # LAB 4 EXERCISES: PART B "HOMEWORK EXERCISE"
 
-**Course:** Web Application Development  
+**Course:** Web Application Development  `
 **Lab Duration:** 2.5 hours  
 **Total Points:** 100 points (In-class: 60 points, Homework: 40 points)
 
