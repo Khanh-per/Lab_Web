@@ -5,22 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Form</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .container {
+            width: 100%;
             max-width: 600px;
-            margin: 0 auto;
             background: white;
             border-radius: 10px;
             padding: 30px;
@@ -31,25 +30,32 @@
             color: #667eea;
             margin-bottom: 30px;
             text-align: center;
+            font-size: 24px;
         }
         
-        .form-group {
-            margin-bottom: 20px;
-        }
+        .form-group { margin-bottom: 20px; }
         
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             color: #333;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 14px;
         }
         
         input, select, textarea {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 6px;
             font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         
         textarea {
@@ -57,93 +63,126 @@
             min-height: 100px;
         }
         
+        /* Validation Error Styles */
+        .input-error {
+            border-color: #dc3545 !important;
+            background-color: #fff8f8;
+        }
+        
+        .error-msg {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 5px;
+            display: block;
+            font-weight: 500;
+        }
+        
+        /* Buttons */
+        .button-group {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+        
         .btn {
-            padding: 12px 30px;
+            flex: 1;
+            padding: 12px;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
             text-decoration: none;
-            display: inline-block;
-            margin-right: 10px;
-            transition: all 0.3s;
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s;
         }
         
         .btn-primary {
             background-color: #667eea;
             color: white;
         }
-        
-        .btn-primary:hover {
-            background-color: #5568d3;
-        }
+        .btn-primary:hover { background-color: #5a6fd6; transform: translateY(-1px); }
         
         .btn-secondary {
-            background-color: #6c757d;
-            color: white;
+            background-color: #e2e6ea;
+            color: #495057;
         }
-        
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-        
-        .button-group {
-            margin-top: 30px;
-            display: flex;
-            justify-content: center;
-        }
+        .btn-secondary:hover { background-color: #dbe0e5; }
     </style>
 </head>
 <body>
+
     <div class="container">
         <h1 th:text="${product.id != null} ? '✏️ Edit Product' : '➕ Add New Product'">Product Form</h1>
-        
+
         <form th:action="@{/products/save}" th:object="${product}" method="post">
-            <!-- Hidden ID field for updates -->
+            
             <input type="hidden" th:field="*{id}" />
             
             <div class="form-group">
-                <label for="productCode">Product Code *</label>
+                <label for="productCode">Product Code <span style="color:red">*</span></label>
                 <input type="text" 
                        id="productCode" 
                        th:field="*{productCode}" 
-                       placeholder="Enter product code (e.g., P001)"
+                       placeholder="e.g., P001"
+                       th:classappend="${#fields.hasErrors('productCode')} ? 'input-error' : ''" 
                        required />
+                <span th:if="${#fields.hasErrors('productCode')}" 
+                      th:errors="*{productCode}" 
+                      class="error-msg"></span>
             </div>
             
             <div class="form-group">
-                <label for="name">Product Name *</label>
+                <label for="name">Product Name <span style="color:red">*</span></label>
                 <input type="text" 
                        id="name" 
                        th:field="*{name}" 
                        placeholder="Enter product name"
+                       th:classappend="${#fields.hasErrors('name')} ? 'input-error' : ''" 
                        required />
+                <span th:if="${#fields.hasErrors('name')}" 
+                      th:errors="*{name}" 
+                      class="error-msg"></span>
+            </div>
+            
+            <div style="display: flex; gap: 20px;">
+                <div class="form-group" style="flex: 1;">
+                    <label for="price">Price ($) <span style="color:red">*</span></label>
+                    <input type="number" 
+                           id="price" 
+                           th:field="*{price}" 
+                           step="0.01" 
+                           min="0"
+                           placeholder="0.00"
+                           th:classappend="${#fields.hasErrors('price')} ? 'input-error' : ''" 
+                           required />
+                    <span th:if="${#fields.hasErrors('price')}" 
+                          th:errors="*{price}" 
+                          class="error-msg"></span>
+                </div>
+                
+                <div class="form-group" style="flex: 1;">
+                    <label for="quantity">Quantity <span style="color:red">*</span></label>
+                    <input type="number" 
+                           id="quantity" 
+                           th:field="*{quantity}" 
+                           min="0"
+                           placeholder="0"
+                           th:classappend="${#fields.hasErrors('quantity')} ? 'input-error' : ''" 
+                           required />
+                    <span th:if="${#fields.hasErrors('quantity')}" 
+                          th:errors="*{quantity}" 
+                          class="error-msg"></span>
+                </div>
             </div>
             
             <div class="form-group">
-                <label for="price">Price ($) *</label>
-                <input type="number" 
-                       id="price" 
-                       th:field="*{price}" 
-                       step="0.01" 
-                       min="0"
-                       placeholder="0.00"
-                       required />
-            </div>
-            
-            <div class="form-group">
-                <label for="quantity">Quantity *</label>
-                <input type="number" 
-                       id="quantity" 
-                       th:field="*{quantity}" 
-                       min="0"
-                       placeholder="0"
-                       required />
-            </div>
-            
-            <div class="form-group">
-                <label for="category">Category *</label>
-                <select id="category" th:field="*{category}" required>
-                    <option value="">Select category</option>
+                <label for="category">Category <span style="color:red">*</span></label>
+                <select id="category" 
+                        th:field="*{category}" 
+                        th:classappend="${#fields.hasErrors('category')} ? 'input-error' : ''"
+                        required>
+                    <option value="">-- Select Category --</option>
                     <option value="Electronics">Electronics</option>
                     <option value="Furniture">Furniture</option>
                     <option value="Clothing">Clothing</option>
@@ -151,13 +190,16 @@
                     <option value="Food">Food</option>
                     <option value="Other">Other</option>
                 </select>
+                <span th:if="${#fields.hasErrors('category')}" 
+                      th:errors="*{category}" 
+                      class="error-msg"></span>
             </div>
             
             <div class="form-group">
                 <label for="description">Description</label>
                 <textarea id="description" 
                           th:field="*{description}" 
-                          placeholder="Enter product description (optional)"></textarea>
+                          placeholder="Enter optional description..."></textarea>
             </div>
             
             <div class="button-group">
@@ -166,5 +208,6 @@
             </div>
         </form>
     </div>
+
 </body>
 </html>
