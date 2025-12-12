@@ -2,12 +2,15 @@ package com.example.customer_api.service;
 
 import com.example.customer_api.dto.CustomerRequestDTO;
 import com.example.customer_api.dto.CustomerResponseDTO;
+import com.example.customer_api.dto.CustomerUpdateDTO;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface CustomerService {
     
-    List<CustomerResponseDTO> getAllCustomers();
+    // List<CustomerResponseDTO> getAllCustomers();
     
     CustomerResponseDTO getCustomerById(Long id);
     
@@ -20,5 +23,11 @@ public interface CustomerService {
     List<CustomerResponseDTO> searchCustomers(String keyword);
     
     List<CustomerResponseDTO> getCustomersByStatus(String status);
+
+    List<CustomerResponseDTO> advancedSearch(String name, String email, String status);
+
+    Page<CustomerResponseDTO> getAllCustomers(Pageable pageable);
+
+    CustomerResponseDTO partialUpdateCustomer(Long id, CustomerUpdateDTO updateDTO);
 }
 

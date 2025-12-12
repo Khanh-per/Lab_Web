@@ -20,7 +20,7 @@ title: LAB 6 AUTHENTICATION & SESSION MANAGEMENTRN
 > Name: Le Hoang Khanh
 > ID: ITCSIU23013
 > Tutor: Nguyen Trung Ngh
-> **Note:** This lab builds on Lab 5 by adding user authentication, session management, and role-based access control. Read this BEFORE the lab session
+> **Note:** This lab builds on Lab 5 by adding user authentication, session management, and role-based access control. Read this BEFORE the lab session 
 ---
 
 ## PART A: IN-CLASS EXERCISES (60 points)

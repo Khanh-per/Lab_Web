@@ -1,0 +1,74 @@
+
+LAB 8 - CUSTOMER API COLLECTION
+Student Name: [Điền tên bạn vào đây]
+Base URL: http://localhost:8080
+
+1. GET ALL CUSTOMERS (Pagination & Sorting)
+------------------------------------------------------------------------
+Method: GET
+URL: http://localhost:8080/api/customers?page=0&size=5&sortBy=id&sortDir=desc
+Description: Take the customer list from the first page, 5 people per page, and sort by ID in descending order.
+
+2. GET CUSTOMER BY ID
+------------------------------------------------------------------------
+Method: GET
+URL: http://localhost:8080/api/customers/1
+Description: Retrieve the details of the customer with ID 1..
+
+3. POST CREATE CUSTOMER
+------------------------------------------------------------------------
+Method: POST
+URL: http://localhost:8080/api/customers
+Description: Create new customer.
+Body (JSON):
+{
+  "customerCode": "C099",
+  "fullName": "New User",
+  "email": "new.user@example.com",
+  "phone": "+123456789",
+  "address": "Hanoi, Vietnam",
+  "status": "ACTIVE"
+}
+
+4. PUT UPDATE CUSTOMER (Full Update)
+------------------------------------------------------------------------
+Method: PUT
+URL: http://localhost:8080/api/customers/1
+Description: Update all customer information for ID 1..
+Body (JSON):
+{
+  "customerCode": "C001",
+  "fullName": "John Updated Full",
+  "email": "john.doe@example.com",
+  "phone": "+11111111",
+  "address": "New Address City",
+  "status": "ACTIVE"
+}
+
+5. PATCH PARTIAL UPDATE (Partial Update)
+------------------------------------------------------------------------
+Method: PATCH
+URL: http://localhost:8080/api/customers/1
+Description:Update only the name of customer ID 1, keep all other fields unchanged..
+Body (JSON):
+{
+  "fullName": "John Renamed Only"
+}
+
+6. DELETE CUSTOMER
+------------------------------------------------------------------------
+Method: DELETE
+URL: http://localhost:8080/api/customers/1
+Description: Delêt custoemr have ID is 1.
+
+7. ADVANCED SEARCH
+------------------------------------------------------------------------
+Method: GET
+URL: http://localhost:8080/api/customers/advanced-search?name=John&status=ACTIVE
+Description: Search for customers whose names contain "John" AND whose status is "ACTIVE"".
+
+8. FILTER BY STATUS
+------------------------------------------------------------------------
+Method: GET
+URL: http://localhost:8080/api/customers/status/ACTIVE
+Description: Filter the list to include all active customers..

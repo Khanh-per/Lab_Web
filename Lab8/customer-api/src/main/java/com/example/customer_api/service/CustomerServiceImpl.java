@@ -2,10 +2,14 @@ package com.example.customer_api.service;
 
 import com.example.customer_api.dto.CustomerRequestDTO;
 import com.example.customer_api.dto.CustomerResponseDTO;
+import com.example.customer_api.dto.CustomerUpdateDTO;
 import com.example.customer_api.entity.Customer;
+import com.example.customer_api.entity.CustomerStatus;
 import com.example.customer_api.exception.DuplicateResourceException;
 import com.example.customer_api.exception.ResourceNotFoundException;
 import com.example.customer_api.repository.CustomerRepository;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 //import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,13 +28,12 @@ public class CustomerServiceImpl implements CustomerService {
     }
     
     @Override
-    public List<CustomerResponseDTO> getAllCustomers() {
-        return customerRepository.findAll()
-                .stream()
-                .map(this::convertToResponseDTO)
-                .collect(Collectors.toList());
+    public Page<CustomerResponseDTO> getAllCustomers(Pageable pageable) {
+        // Repository.findAll(Pageable) already supports both pagination and sorting.
+        return customerRepository.findAll(pageable)
+                .map(this::convertToResponseDTO);
     }
-    
+
     @Override
     public CustomerResponseDTO getCustomerById(Long id) {
         Customer customer = customerRepository.findById(id)
@@ -97,15 +100,67 @@ public class CustomerServiceImpl implements CustomerService {
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<CustomerResponseDTO> getCustomersByStatus(String status) {
-        return customerRepository.findByStatus(status)
-                .stream()
+        try {
+            CustomerStatus statusEnum = CustomerStatus.valueOf(status.toUpperCase());
+            return customerRepository.findByStatus(statusEnum)
+                    .stream()
+                    .map(this::convertToResponseDTO)
+                    .collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            // Log error or throw a custom exception that maps to 400 Bad Request
+            throw new ResourceNotFoundException("Invalid status provided: " + status);
+        }
+    }
+
+    @Override
+    public List<CustomerResponseDTO> advancedSearch(String name, String email, String statusStr) {
+
+        CustomerStatus status = null;
+        if (statusStr != null && !statusStr.isEmpty()) {
+            try {
+                status = CustomerStatus.valueOf(statusStr.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                status = null;
+            }
+        }
+
+        List<Customer> customers = customerRepository.advancedSearch(name, email, status);
+
+        return customers.stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
     
+    @Override
+    public CustomerResponseDTO partialUpdateCustomer(Long id, CustomerUpdateDTO updateDTO) {
+    
+    // Fetch existing customer
+    Customer customer = customerRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+    
+    // Only update non-null fields
+    if (updateDTO.getFullName() != null) {
+        customer.setFullName(updateDTO.getFullName());
+    }
+    if (updateDTO.getEmail() != null) {
+        customer.setEmail(updateDTO.getEmail());
+    }
+
+    if (updateDTO.getPhone() != null) {
+        customer.setPhone(updateDTO.getPhone());
+    }
+    
+    if (updateDTO.getAddress() != null) {
+        customer.setAddress(updateDTO.getAddress());
+    }
+    
+    // Save and update customer
+    return convertToResponseDTO(customerRepository.save(customer));
+    }
+
     // Helper Methods for DTO Conversion
     
     private CustomerResponseDTO convertToResponseDTO(Customer customer) {

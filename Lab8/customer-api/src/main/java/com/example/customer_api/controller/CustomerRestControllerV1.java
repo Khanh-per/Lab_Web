@@ -15,16 +15,15 @@ import org.springframework.data.domain.Pageable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
-@RequestMapping("/api/customers")
+@RequestMapping("/api/v1/customers")
 @CrossOrigin(origins = "*")  // Allow CORS for frontend
-public class CustomerRestController {
+public class CustomerRestControllerV1 {
     
     private final CustomerService customerService;
     
-    public CustomerRestController(CustomerService customerService) {
+    public CustomerRestControllerV1(CustomerService customerService) {
         this.customerService = customerService;
     }
 
@@ -61,10 +60,6 @@ public class CustomerRestController {
     @GetMapping("/{id}")
     public ResponseEntity<CustomerResponseDTO> getCustomerById(@PathVariable Long id) {
         CustomerResponseDTO customer = customerService.getCustomerById(id);
-        
-        customer.add(linkTo(methodOn(CustomerRestController.class).getCustomerById(id)).withSelfRel());
-        customer.add(linkTo(methodOn(CustomerRestController.class).getAllCustomers(0, 10, "id", "asc")).withRel("all-customers"));
-        
         return ResponseEntity.ok(customer);
     }
     

@@ -2,7 +2,9 @@ package com.example.customer_api.dto;
 
 import java.time.LocalDateTime;
 
-public class CustomerResponseDTO {
+import org.springframework.hateoas.RepresentationModel;
+
+public class CustomerResponseDTO extends RepresentationModel<CustomerResponseDTO>{
     
     private Long id;
     private String customerCode;

@@ -985,7 +985,6 @@ Create `API_DOCUMENTATION.md` file:
     ...
 }
 ```
-```
 
 ---
 
