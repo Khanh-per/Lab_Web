@@ -260,6 +260,7 @@ Result:
 Add search functionality to find customers by keyword.
 
 1. Client sent request: User sent **HTTP GET request**  to the URL (/api/customers/search) and the keyword (e.g., ?keyword=john)
+
 2. Controller: recieve the keyword from the URL and sent to the **Server**
 ```java
     @GetMapping("/search") 
@@ -283,7 +284,7 @@ Add search functionality to find customers by keyword.
 ```
 GET /api/customers/search?keyword=john
 ```
-![screenshoot](image/Task5.png)
+![screenshoot](image/Task5_1.png)
 
 ---
 
@@ -802,10 +803,10 @@ Implement rate limiting for API endpoints.
 **Add Bucket4j dependency:**
 ```xml
 <dependency>
-    <groupId>com.github.vladimir-bukhtoyarov</groupId>
-    <artifactId>bucket4j-core</artifactId>
-    <version>8.1.0</version>
+	<groupId>com.bucket4j</groupId> <artifactId>bucket4j-core</artifactId>
+	<version>8.1.0</version>
 </dependency>
+
 ```
 
 **Create rate limiting interceptor:**
@@ -813,18 +814,21 @@ Implement rate limiting for API endpoints.
 @Component
 public class RateLimitInterceptor implements HandlerInterceptor {
     
-    private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
+     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
     
     @Override
     public boolean preHandle(HttpServletRequest request, 
-                            HttpServletResponse response, 
-                            Object handler) throws Exception {
+                             HttpServletResponse response, 
+                             Object handler) throws Exception {
         
-        String key = request.getRemoteAddr();
+        String key = request.getRemoteAddr();// Identify user by IP address
+
+        // Get or create a bucket for this IP
         Bucket bucket = cache.computeIfAbsent(key, k -> createNewBucket());
         
+        // Try to consume 1 token
         if (bucket.tryConsume(1)) {
-            return true;
+            return true; //Success, proceed to Controller
         }
         
         response.setStatus(429);
@@ -833,9 +837,14 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     }
     
     private Bucket createNewBucket() {
-        return Bucket.builder()
-            .addLimit(Bandwidth.simple(100, Duration.ofMinutes(1)))
-            .build();
+        
+    // Rule: 100 requests allowed per 1 minute
+    return Bucket.builder()
+        .addLimit(Bandwidth.simple(2, Duration.ofMinutes(1)))
+        .build();
     }
+
 }
 ```
+Result:
+- ![screenshoot](image/BonusV3.png)
